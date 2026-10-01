@@ -1,7 +1,9 @@
+import os
+import urllib.request
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import io, base64, os
+import io, base64
 from PIL import Image
 
 from model_utils import load_model, GradCAM, predict_and_explain
@@ -17,6 +19,13 @@ app.add_middleware(
 )
 
 WEIGHTS_PATH = os.environ.get("WEIGHTS_PATH", "best_model.pth")
+WEIGHTS_URL = os.environ.get("WEIGHTS_URL")
+
+if not os.path.exists(WEIGHTS_PATH) and WEIGHTS_URL:
+    print(f"Téléchargement du modèle depuis {WEIGHTS_URL} ...")
+    urllib.request.urlretrieve(WEIGHTS_URL, WEIGHTS_PATH)
+    print("Téléchargement terminé.")
+
 model = load_model(WEIGHTS_PATH)
 gradcam = GradCAM(model, model.layer4)
 
